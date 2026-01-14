@@ -1,0 +1,4 @@
+SEED ARE THE STATIC DATA NEEDED TO BE LOADED BEFORE STARTING THE SERVER
+
+seed/daySeed.js ... - contains the statics and functions to be loaded
+seed/index.js - the one loads all the seeds
