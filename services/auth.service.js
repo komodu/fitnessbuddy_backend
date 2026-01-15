@@ -2,6 +2,7 @@ const User = require("../models/userModel")
 const bcrypt = require("bcryptjs")
 const { signToken } = require("../utils/token")
 
+
 exports.login = async (username, password) =>{
     const user = await User.findOne({username});
     if (!user) throw new Error("Invalid credentials");
@@ -10,8 +11,8 @@ exports.login = async (username, password) =>{
     if (!isMatch) throw new Error("Invalid credentials");
 
     const token = signToken({ userId: user.id });
-
-    return token;
+   
+    return { user: user.username , token };
 }
 
 exports.register = async (username, password) =>{
@@ -32,3 +33,4 @@ exports.register = async (username, password) =>{
 
     return { user, token };
 }
+

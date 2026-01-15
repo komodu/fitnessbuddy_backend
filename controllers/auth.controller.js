@@ -4,18 +4,21 @@ const authService = require("../services/auth.service")
 // Controller that will create token through the authService
 exports.login = async (req, res) =>{
     try{
-        const token = await authService.login(
+        const data = await authService.login(
             req.body.username,
             req.body.password
         )
-        res.cookie("token", token, {
+        res.cookie("token", data.token, {
             httpOnly: true,   // JS cannot read it (optional, recommended)
             secure: false,    // must be false for HTTP
             sameSite: "lax",  // strict blocks cross-port localhost requests
             maxAge: 24*60*60*1000
         });
 
-        res.json({message: "Login successful"})
+        res.json({
+            data: data,
+            result: "Login successful"
+        })
     }catch (err) {
         res.status(401).json({ message: err.message });
     }
@@ -39,4 +42,9 @@ exports.register = async (req,res) =>{
     res.status(400).json({message: err.message});
     }
 
+}
+
+exports.profile = async (req, res) =>{
+    const user = await User.findById(req.user.id).select("-password");
+    res.json(user);
 }
