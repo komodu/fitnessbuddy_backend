@@ -27,7 +27,7 @@ exports.login = async (req, res) =>{
 // Register point
 exports.register = async (req,res) =>{
     try{
-        const { user, token }= await authService.register(req.body.username, req.body.password)
+        const { user, token }= await authService.register(req.body.username, req.body.password, req.body.name, req.body.email, req.body.age)
         
 
         // Send JWT Cookie immediately
@@ -37,7 +37,7 @@ exports.register = async (req,res) =>{
             sameSite: "lax",
             maxAge: 1000 * 60 * 15,
         });
-        res.json({ message: "User registered successfully", userId: user._id})
+        res.json({ message: "User registered successfully", user: user})
     }catch (err){
     res.status(400).json({message: err.message});
     }

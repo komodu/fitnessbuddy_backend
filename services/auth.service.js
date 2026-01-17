@@ -15,7 +15,7 @@ exports.login = async (username, password) =>{
     return { user: user.username , token };
 }
 
-exports.register = async (username, password) =>{
+exports.register = async (username, password, name, email, age) =>{
     //Check first if username already exist
     const existing = await User.findOne({ username });
     if (existing) throw new Error("Username already registered");
@@ -27,6 +27,9 @@ exports.register = async (username, password) =>{
     const user = await User.create({
         username,
         password: hashedPassword,
+        name,
+        email,
+        age,
     });
 
     const token = signToken({ userId: user._id });
