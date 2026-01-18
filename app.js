@@ -1,14 +1,14 @@
 // Env File
-require('dotenv').config();
+require("dotenv").config();
 
 // Require
 const express = require("express");
-const workoutRoutes = require("./routes/workouts")
-const workoutTypeRoutes = require("./routes/workoutType")
-const autRoutes = require("./routes/auth.routes")
-const cors = require("cors")
+const exerciseRoutes = require("./routes/exercises");
+const workoutTypeRoutes = require("./routes/workoutType");
+const authRoutes = require("./routes/auth.routes");
+const cors = require("cors");
 // Require Cookie Parser
-const cookieParser = require('cookie-parser');
+const cookieParser = require("cookie-parser");
 
 // Express App
 const app = express();
@@ -17,22 +17,22 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(cors({
+app.use(
+  cors({
     origin: "http://localhost:3000",
     // methods: ["GET","POST","PUT","DELETE"],
-    credentials: true
-}))
+    credentials: true,
+  }),
+);
 
-app.use((req, res, next) =>{
-    console.log(req.path, req.method)
-    next()
-})
-
-
+app.use((req, res, next) => {
+  console.log(req.path, req.method);
+  next();
+});
 
 // Routings
-app.use('/api/workout', workoutRoutes);
-app.use('/api/workout-types', workoutTypeRoutes);
-app.use('/api/auth', autRoutes)
+app.use("/api/exercise", exerciseRoutes);
+app.use("/api/workout-types", workoutTypeRoutes);
+app.use("/api/auth", authRoutes);
 
 module.exports = app;

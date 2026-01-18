@@ -1,57 +1,57 @@
-const authService = require("../services/auth.service")
-const User = require("../models/userModel")
+const authService = require("../services/auth.service");
+const User = require("../models/userModel");
 
 // Controller that will create token through the authService
-exports.login = async (req, res) =>{
-    try{
-        const data = await authService.login(
-            req.body.username,
-            req.body.password
-        )
-        res.cookie("token", data.token, {
-            httpOnly: true,   // JS cannot read it (optional, recommended)
-            secure: false,    // must be false for HTTP
-            sameSite: "lax",  // strict blocks cross-port localhost requests
-            maxAge: 24*60*60*1000
-        });
+exports.login = async (req, res) => {
+  try {
+    const data = await authService.login(req.body.username, req.body.password);
+    res.cookie("token", data.token, {
+      httpOnly: true, // JS cannot read it (optional, recommended)
+      secure: false, // must be false for HTTP
+      sameSite: "lax", // strict blocks cross-port localhost requests
+      maxAge: 24 * 60 * 60 * 1000,
+    });
 
-        res.json({
-            data: data,
-            result: "Login successful"
-        })
-    }catch (err) {
-        res.status(401).json({ message: err.message });
-    }
-}
+    res.json({
+      data: data,
+      result: "Login successful",
+    });
+  } catch (err) {
+    res.status(401).json({ message: err.message });
+  }
+};
 
 // Register point
-exports.register = async (req,res) =>{
-    try{
-        const { user, token }= await authService.register(req.body.username, req.body.password, req.body.name, req.body.email, req.body.age)
-        
+exports.register = async (req, res) => {
+  try {
+    const { user, token } = await authService.register(
+      req.body.username,
+      req.body.password,
+      req.body.name,
+      req.body.email,
+      req.body.age,
+    );
 
-        // Send JWT Cookie immediately
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 1000 * 60 * 15,
-        });
-        res.json({ message: "User registered successfully", user: user})
-    }catch (err){
-    res.status(400).json({message: err.message});
-    }
+    // Send JWT Cookie immediately
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 15,
+    });
+    res.json({ message: "User registered successfully", user: user });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
 
-}
-
-exports.profile = async (req, res) =>{
-    console.log("userid: ", req.user.userId)
-    try{
-        const user = await User.findById(req.user.userId);
-        res.json(user);
-        console.log("userz: ", res.json(user));
-
-    } catch (error) {
-        res.status(400).json({message: error.message})
-    }
-}
+exports.profile = async (req, res) => {
+  console.log("userid: ", req.user.userId);
+  try {
+    const user = await User.findById(req.user.userId);
+    res.json(user);
+    console.log("userz: ", res.json(user));
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};

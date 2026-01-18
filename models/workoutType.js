@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const workoutTypeSchema = new mongoose.Schema({
   name: {
@@ -6,7 +6,7 @@ const workoutTypeSchema = new mongoose.Schema({
     required: true,
     unique: true, // ensure no duplicates like two 'Back'
     trim: true,
-  }
+  },
 });
-const WorkoutType = mongoose.model('WorkoutType', workoutTypeSchema);
+const WorkoutType = mongoose.model("WorkoutType", workoutTypeSchema);
 module.exports = WorkoutType;
