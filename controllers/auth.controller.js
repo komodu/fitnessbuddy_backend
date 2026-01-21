@@ -24,7 +24,7 @@ exports.login = async (req, res) => {
 // Register point
 exports.register = async (req, res) => {
   try {
-    const { user, token } = await authService.register(
+    const { registerUserInfo, token } = await authService.register(
       req.body.username,
       req.body.password,
       req.body.name,
@@ -39,7 +39,11 @@ exports.register = async (req, res) => {
       sameSite: "lax",
       maxAge: 1000 * 60 * 15,
     });
-    res.json({ message: "User registered successfully", user: user });
+
+    res.json({
+      message: "User registered successfully",
+      user: registerUserInfo,
+    });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
