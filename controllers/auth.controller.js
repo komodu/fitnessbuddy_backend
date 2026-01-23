@@ -48,14 +48,3 @@ exports.register = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
-
-exports.profile = async (req, res) => {
-  console.log("userid: ", req.user.userId);
-  try {
-    const user = await User.findById(req.user.userId);
-    res.json(user);
-    console.log("userz: ", res.json(user));
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};

@@ -2,6 +2,7 @@
 require("dotenv").config();
 
 // Require
+
 const express = require("express");
 const exerciseRoutes = require("./routes/exercises");
 const workoutTypeRoutes = require("./routes/workoutType");

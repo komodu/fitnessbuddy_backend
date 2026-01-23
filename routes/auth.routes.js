@@ -3,9 +3,10 @@ const auth = require("../middlewares/auth.middleware");
 
 require("dotenv").config();
 const express = require("express");
-const authController = require("../controllers/auth.controller");
-const authenticateToken = require("../middlewares/auth.middleware");
 const authRouter = express.Router();
+const authController = require("../controllers/auth.controller");
+const profileController = require("../controllers/profile.controller");
+const authenticateToken = require("../middlewares/auth.middleware");
 // const JWT_SECRET = process.env.JWT_SECRET || "YOUR_DEFAULT_SECRET";
 
 // Login route
@@ -15,8 +16,10 @@ authRouter.post("/login", authController.login);
 authRouter.post("/register", authController.register);
 
 // Profile route
-authRouter.get("/profile", auth, authController.profile);
+authRouter.get("/profile", auth, profileController.getProfileInfo);
+authRouter.put("/:id", auth, profileController.updateProfileInfo);
 
+// Logout route
 authRouter.post("/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
