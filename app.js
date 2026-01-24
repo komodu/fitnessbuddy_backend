@@ -10,6 +10,7 @@ const authRoutes = require("./routes/auth.routes");
 const cors = require("cors");
 // Require Cookie Parser
 const cookieParser = require("cookie-parser");
+const workoutPlanRouter = require("./routes/workout-plan");
 
 // Express App
 const app = express();
@@ -34,6 +35,7 @@ app.use((req, res, next) => {
 // Routings
 app.use("/api/exercise", exerciseRoutes);
 app.use("/api/workout-types", workoutTypeRoutes);
+app.use("/api/workoutplan", workoutPlanRouter);
 app.use("/api/auth", authRoutes);
 
 module.exports = app;

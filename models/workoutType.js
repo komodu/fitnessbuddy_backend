@@ -8,5 +8,4 @@ const workoutTypeSchema = new mongoose.Schema({
     trim: true,
   },
 });
-const WorkoutType = mongoose.model("WorkoutType", workoutTypeSchema);
-module.exports = WorkoutType;
+module.exports = mongoose.model("WorkoutType", workoutTypeSchema);
