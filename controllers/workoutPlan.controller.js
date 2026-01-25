@@ -5,6 +5,7 @@ const generateWeeklySchedule = require("../utils/generateWeeklySchedule.js");
 
 const WorkoutType = require("../models/workoutType.js");
 const WorkoutPlanTemplate = require("../models/workoutPlanTemplate.js");
+
 const createWorkoutPlanTemplate = async (req, res) => {
   try {
     const {
@@ -13,20 +14,23 @@ const createWorkoutPlanTemplate = async (req, res) => {
       workoutTypeIds, // array from frontend
     } = req.body;
 
-    // 1️⃣ Find REST workout type
+    // Find REST workout type
     const restWorkoutType = await WorkoutType.findOne({ name: "Rest" });
 
     if (!restWorkoutType) {
-      return res.status(400).json({ message: "Rest workout type not found" });
+      await WorkoutType.create({ name: "Rest" });
+      res.status(201).json({
+        message: "Rest workout type not found, and created it successfully",
+      });
     }
 
-    // 2️⃣ Generate weekly schedule
+    //  Generate weekly schedule
     const weeklySchedule = generateWeeklySchedule(
       workoutTypeIds,
       restWorkoutType._id,
     );
 
-    // 3️⃣ Save template
+    //  Save template
     const template = await WorkoutPlanTemplate.create({
       name,
       daysPerWeek,
@@ -35,7 +39,8 @@ const createWorkoutPlanTemplate = async (req, res) => {
 
     res.status(201).json(template);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.log("name", req);
+    res.status(500).json({ error: err.message, req: req.body });
   }
 };
 

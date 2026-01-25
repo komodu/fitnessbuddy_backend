@@ -1,14 +1,14 @@
 // seed/daySeed.js
-const Day = require('../models/dayModel.js');
+const Day = require("../models/dayModel.js");
 
 const days = [
-  { day: 'Monday' },
-  { day: 'Tuesday' },
-  { day: 'Wednesday' },
-  { day: 'Thursday' },
-  { day: 'Friday' },
-  { day: 'Saturday' },
-  { day: 'Sunday' },
+  { day: "Monday" },
+  { day: "Tuesday" },
+  { day: "Wednesday" },
+  { day: "Thursday" },
+  { day: "Friday" },
+  { day: "Saturday" },
+  { day: "Sunday" },
 ];
 
 async function seedDays() {
@@ -18,9 +18,9 @@ async function seedDays() {
     // Optionally use upsert/avoid duplicates instead of deleteMany in prod
     await Day.deleteMany();
     await Day.insertMany(days);
-    console.log('Days seeded successfully');
+    console.log("Days seeded successfully");
   } catch (err) {
-    console.error('Day seeding failed:', err);
+    console.error("Day seeding failed:", err);
     throw err; // bubble up so central seeder knows it failed
   }
 }
