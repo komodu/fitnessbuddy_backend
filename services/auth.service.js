@@ -10,9 +10,9 @@ exports.login = async (username, password) => {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error("Invalid credentials");
 
-  const token = signToken({ userId: user.id });
+  const token = signToken({ id: user._id, username: user.username });
 
-  return { user: user.username, token };
+  return { userid: user.id, username: user.username, token };
 };
 
 exports.register = async (username, password, name, email, age) => {
@@ -39,9 +39,22 @@ exports.register = async (username, password, name, email, age) => {
   });
 
   // Generate Token
-  const token = signToken({ userId: user._id });
-  console.log(name);
-  console.log(email);
-  console.log(age);
+  const token = signToken({ id: user._id, username: user.username });
+
   return { registerUserInfo, token };
+};
+
+exports.verify = async (id) => {
+  try {
+    const user = await User.findById(id);
+    if (!user) throw new Error("User not found");
+    console.log("User : ", user);
+
+    const userInfo = await UserInfo.findOne({ user: user._id });
+    if (!userInfo) throw new Error("User info not found");
+    return { user: user, userInfo: userInfo };
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ message: err.message });
+  }
 };

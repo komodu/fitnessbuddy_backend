@@ -1,5 +1,4 @@
 const authService = require("../services/auth.service");
-const User = require("../models/userModel");
 
 // Controller that will create token through the authService
 exports.login = async (req, res) => {
@@ -44,6 +43,15 @@ exports.register = async (req, res) => {
       message: "User registered successfully",
       user: registerUserInfo,
     });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+exports.verify = async (req, res) => {
+  try {
+    const { user, userInfo } = await authService.verify(req.user.id);
+    res.status(200).json({ status: "success", user: user, userInfo: userInfo });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
