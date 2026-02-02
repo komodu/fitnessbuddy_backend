@@ -8,11 +8,13 @@ const WorkoutPlanTemplate = require("../models/workoutPlanTemplate.js");
 
 const createWorkoutPlanTemplate = async (req, res) => {
   try {
+    console.log("reqbody1: ", req.body);
     const {
       name,
       daysPerWeek,
       workoutTypeIds, // array from frontend
     } = req.body;
+    console.log("reqbody2: ", req.body);
 
     // Find REST workout type
     const restWorkoutType = await WorkoutType.findOne({ name: "Rest" });
@@ -39,7 +41,6 @@ const createWorkoutPlanTemplate = async (req, res) => {
 
     res.status(201).json(template);
   } catch (err) {
-    console.log("name", req);
     res.status(500).json({ error: err.message, req: req.body });
   }
 };
