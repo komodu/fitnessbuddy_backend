@@ -10,9 +10,16 @@ exports.login = async (username, password) => {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error("Invalid credentials");
 
+  const userInfo = await UserInfo.findOne({ user: user._id });
+  if (!userInfo) throw new Error("User info not found");
   const token = signToken({ id: user._id, username: user.username });
 
-  return { userid: user.id, username: user.username, token };
+  return {
+    userInfo: userInfo,
+    userid: user.id,
+    username: user.username,
+    token,
+  };
 };
 
 exports.register = async (username, password, name, email, age) => {
