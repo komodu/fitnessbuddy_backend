@@ -48,7 +48,9 @@ const createWorkoutPlanTemplate = async (req, res) => {
 const getTodayWorkout = async (req, res) => {
   const userId = req.user.id;
 
-  const userPlan = await UserWorkoutPlan.findOne({ user: userId }).populate({
+  const userPlan = await UserWorkoutPlan.findOne({
+    user: userId,
+  }).populate({
     path: "planTemplate",
     populate: {
       path: "weeklySchedule.monday weeklySchedule.tuesday weeklySchedule.wednesday weeklySchedule.thursday weeklySchedule.friday weeklySchedule.saturday weeklySchedule.sunday",
@@ -68,7 +70,7 @@ const getTodayWorkout = async (req, res) => {
   });
 };
 
-const getWorkoutPlans = async (req, res) => {
+const getWorkoutPlansTemplates = async (req, res) => {
   try {
     const templates = await WorkoutPlanTemplate.find({}).sort({
       createdAt: -1,
@@ -80,8 +82,36 @@ const getWorkoutPlans = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+const createUserPlan = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const {
+      planTemplate: selectedTemplate,
+      startDate,
+      durationWeeks,
+    } = req.body;
+    console.log(userId);
+    console.log(selectedTemplate);
+    console.log(startDate);
+    console.log(durationWeeks);
+    // ! Create validations & date must not conflict
+
+    const createdPlan = await UserWorkoutPlan.create({
+      user: userId,
+      planTemplate: selectedTemplate,
+      startDate: startDate,
+      durationWeeks: durationWeeks,
+    });
+    res.status(201).json({ message: "Success", data: createdPlan });
+  } catch (err) {
+    console.log("error in creating: ", err);
+    res.status(400).json({ message: err.message });
+  }
+};
 module.exports = {
-  getWorkoutPlans,
+  createUserPlan,
+  getWorkoutPlansTemplates,
   getTodayWorkout,
   createWorkoutPlanTemplate,
 };
