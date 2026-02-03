@@ -68,4 +68,20 @@ const getTodayWorkout = async (req, res) => {
   });
 };
 
-module.exports = { getTodayWorkout, createWorkoutPlanTemplate };
+const getWorkoutPlans = async (req, res) => {
+  try {
+    const templates = await WorkoutPlanTemplate.find({}).sort({
+      createdAt: -1,
+    });
+    console.log(templates);
+    res.status(201).json(templates);
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ message: err.message });
+  }
+};
+module.exports = {
+  getWorkoutPlans,
+  getTodayWorkout,
+  createWorkoutPlanTemplate,
+};
