@@ -5,6 +5,7 @@ require("dotenv").config();
 
 const express = require("express");
 const exerciseRoutes = require("./routes/exercises");
+const dashboardRoute = require("./routes/dashboard.route");
 const workoutTypeRoutes = require("./routes/workoutType");
 const authRoutes = require("./routes/auth.routes");
 const cors = require("cors");
@@ -37,5 +38,6 @@ app.use("/api/exercise", exerciseRoutes);
 app.use("/api/workout-types", workoutTypeRoutes);
 app.use("/api/workoutplan", workoutPlanRouter);
 app.use("/api/auth", authRoutes);
+app.use("/api/today", dashboardRoute);
 
 module.exports = app;

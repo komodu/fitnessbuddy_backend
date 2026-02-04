@@ -10,11 +10,10 @@ const days = [
 
 const generateWeeklySchedule = (workoutTypeIds, restWorkoutTypeId) => {
   const schedule = {};
-
   days.forEach((day, index) => {
-    schedule[day] = workoutTypeIds[index] || restWorkoutTypeId;
+    schedule[day] = workoutTypeIds[day] || restWorkoutTypeId;
   });
-  console.log("sched: ", schedule);
+
   return schedule;
 };
 

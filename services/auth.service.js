@@ -55,7 +55,6 @@ exports.verify = async (id) => {
   try {
     const user = await User.findById(id);
     if (!user) throw new Error("User not found");
-    console.log("User : ", user);
 
     const userInfo = await UserInfo.findOne({ user: user._id });
     if (!userInfo) throw new Error("User info not found");
