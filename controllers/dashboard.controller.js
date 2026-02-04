@@ -1,9 +1,13 @@
 const UserWorkoutPlan = require("../models/userWorkoutPlan");
 const getWorkoutForDate = require("../utils/getWorkoutForDates");
+const Execise = require("../models/exerciseModel");
 
 const getTodayWorkout = async (req, res) => {
+  // Ensures Token is processed
   const userId = req.user.id;
-  console.log("today: ", userId);
+
+  // Checks the User's Workout Plan
+  // TODO! : Workout Plan Duration must be monitored
   const userPlan = await UserWorkoutPlan.findOne({
     user: userId,
   }).populate({
@@ -17,13 +21,28 @@ const getTodayWorkout = async (req, res) => {
     return res.status(404).json({ message: "No workout plan found" });
   }
 
+  // Get Today's Workout
   const today = new Date();
   const workoutType = getWorkoutForDate(today, userPlan.planTemplate);
-  console.log("today: ", today);
-  console.log("workoutType: ", workoutType);
+
+  // Find Exercises for the Day based on Workout Type Assigned on the Day
+  const exercisesForTheDay = await Execise.find({
+    workoutType: workoutType.exercises._id,
+  });
+
+  if (!exercisesForTheDay) {
+    return res
+      .status(404)
+      .json({ message: `No workouts assigned to ${workoutType.name}` });
+  }
+
+  // Returns the value needed for Display
+
   res.json({
     date: today,
-    workoutType,
+    day: workoutType.day,
+    name: workoutType.exercises.name,
+    exercisesForTheDay,
   });
 };
 
