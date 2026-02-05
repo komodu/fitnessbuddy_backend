@@ -16,8 +16,8 @@ const userWorkoutPlanSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-  durationWeeks: {
-    type: Number,
+  endDate: {
+    type: Date,
     required: true,
   },
 });

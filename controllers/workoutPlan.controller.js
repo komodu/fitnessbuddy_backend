@@ -61,22 +61,18 @@ const getWorkoutPlansTemplates = async (req, res) => {
 const createUserPlan = async (req, res) => {
   try {
     const userId = req.user.id;
-    const {
-      planTemplate: selectedTemplate,
-      startDate,
-      durationWeeks,
-    } = req.body;
+    const { planTemplate: selectedTemplate, startDate, endDate } = req.body;
     console.log(userId);
     console.log(selectedTemplate);
     console.log(startDate);
-    console.log(durationWeeks);
+    console.log(endDate);
     // ! Create validations & date must not conflict
 
     const createdPlan = await UserWorkoutPlan.create({
       user: userId,
       planTemplate: selectedTemplate,
       startDate: startDate,
-      durationWeeks: durationWeeks,
+      endDate: endDate,
     });
     res.status(201).json({ message: "Success", data: createdPlan });
   } catch (err) {
@@ -84,7 +80,12 @@ const createUserPlan = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+const getCurrentUserPlan = async (req, res) => {
+  //! TODO: Create controller for this and remove the fetching for every day
+};
 module.exports = {
+  getCurrentUserPlan,
   createUserPlan,
   getWorkoutPlansTemplates,
   createWorkoutPlanTemplate,
