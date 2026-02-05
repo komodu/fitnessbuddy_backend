@@ -83,6 +83,24 @@ const createUserPlan = async (req, res) => {
 
 const getCurrentUserPlan = async (req, res) => {
   //! TODO: Create controller for this and remove the fetching for every day
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // normalize to midnight
+  console.log("TODAY: ", today);
+  const activePlan = await UserWorkoutPlan.findOne({
+    user: req.user.id,
+    startDate: { $lte: today },
+    endDate: { $gte: today },
+  }).populate({
+    path: "planTemplate",
+    populate: {
+      path: "weeklySchedule.monday weeklySchedule.tuesday weeklySchedule.wednesday weeklySchedule.thursday weeklySchedule.friday weeklySchedule.saturday weeklySchedule.sunday",
+    },
+  });
+  if (!activePlan) {
+    return res.status(404).json({ message: "No active workout plan" });
+  }
+  console.log("active: ", activePlan);
+  res.json(activePlan);
 };
 module.exports = {
   getCurrentUserPlan,

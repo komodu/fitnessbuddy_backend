@@ -7,7 +7,6 @@ const getTodayWorkout = async (req, res) => {
   const userId = req.user.id;
 
   // Checks the User's Workout Plan
-  // TODO! : Workout Plan Duration must be monitored
   const userPlan = await UserWorkoutPlan.findOne({
     user: userId,
   }).populate({
@@ -39,6 +38,7 @@ const getTodayWorkout = async (req, res) => {
   // Returns the value needed for Display
 
   res.json({
+    plan: userPlan,
     date: today,
     day: workoutType.day,
     name: workoutType.exercises.name,
