@@ -1,9 +1,10 @@
 const UserWorkoutPlan = require("../models/userWorkoutPlan");
-
+const Exercises = require("../models/exerciseModel.js");
 const generateWeeklySchedule = require("../utils/generateWeeklySchedule.js");
 
 const WorkoutType = require("../models/workoutType.js");
 const WorkoutPlanTemplate = require("../models/workoutPlanTemplate.js");
+const getWorkoutForDate = require("../utils/getWorkoutForDates.js");
 
 const createWorkoutPlanTemplate = async (req, res) => {
   try {
@@ -86,21 +87,51 @@ const getCurrentUserPlan = async (req, res) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // normalize to midnight
   console.log("TODAY: ", today);
-  const activePlan = await UserWorkoutPlan.findOne({
+  const userPlan = await UserWorkoutPlan.findOne({
     user: req.user.id,
-    startDate: { $lte: today },
-    endDate: { $gte: today },
   }).populate({
     path: "planTemplate",
     populate: {
-      path: "weeklySchedule.monday weeklySchedule.tuesday weeklySchedule.wednesday weeklySchedule.thursday weeklySchedule.friday weeklySchedule.saturday weeklySchedule.sunday",
+      path: Object.values({
+        monday: "weeklySchedule.monday",
+        tuesday: "weeklySchedule.tuesday",
+        wednesday: "weeklySchedule.wednesday",
+        thursday: "weeklySchedule.thursday",
+        friday: "weeklySchedule.friday",
+        saturday: "weeklySchedule.saturday",
+        sunday: "weeklySchedule.sunday",
+      }).join(" "),
     },
   });
-  if (!activePlan) {
-    return res.status(404).json({ message: "No active workout plan" });
+
+  if (!userPlan) {
+    return res.status(404).json({ message: "No workout plan found" });
   }
-  console.log("active: ", activePlan);
-  res.json(activePlan);
+
+  const { day, workout } = getWorkoutForDate(today, userPlan.planTemplate);
+
+  if (!workout) {
+    return res.status(404).json({
+      message: `No workout assigned for ${day}`,
+    });
+  }
+
+  const exercisesForTheDay = await Exercises.find({
+    workoutType: workout._id,
+  });
+  if (!exercisesForTheDay) {
+    return res
+      .status(404)
+      .json({ message: `No workout assigned for ${workout.name}` });
+  }
+  console.log("WKLEHJAKL: ", workout._id);
+  return res.json({
+    userPlan,
+    date: today,
+    day,
+    workoutType: workout.name,
+    exercises: exercisesForTheDay,
+  });
 };
 module.exports = {
   getCurrentUserPlan,

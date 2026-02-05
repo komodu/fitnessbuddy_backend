@@ -1,7 +1,14 @@
 const UserWorkoutPlan = require("../models/userWorkoutPlan");
-const getWorkoutForDate = require("../utils/getWorkoutForDates");
 const Execise = require("../models/exerciseModel");
 
+const getWorkoutForDate = (date, template) => {
+  const day = date
+    .toLocaleDateString("en-US", { weekday: "long" })
+    .toLowerCase();
+  console.log(day);
+  // Returns the Day and the Type within that Day
+  return { exercises: template.weeklySchedule[day], day };
+};
 const getTodayWorkout = async (req, res) => {
   // Ensures Token is processed
   const userId = req.user.id;
