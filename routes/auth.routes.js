@@ -19,7 +19,7 @@ authRouter.get("/me", auth, authController.verify);
 
 // Profile route
 authRouter.get("/profile", auth, profileController.getProfileInfo);
-authRouter.put("/:id", auth, profileController.updateProfileInfo);
+authRouter.patch("/:id", auth, profileController.updateProfileInfo);
 
 // Logout route
 authRouter.post("/logout", (req, res) => {

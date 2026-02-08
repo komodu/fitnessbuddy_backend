@@ -1,9 +1,9 @@
 const UserInfo = require("../models/userInfoModel");
 
 const getProfileInfo = async (req, res) => {
-  console.log("userid:1 ", req.user.userId);
+  console.log("userid:1 ", req.user.id);
   try {
-    const userInfo = await UserInfo.findOne({ user: req.user.userId });
+    const userInfo = await UserInfo.findOne({ user: req.user.id });
     if (!userInfo) {
       throw new Error("Error");
     }
@@ -14,20 +14,22 @@ const getProfileInfo = async (req, res) => {
 };
 
 const updateProfileInfo = async (req, res) => {
-  const { id } = req.params;
+  try {
+    const userInfo = await UserInfo.findOneAndUpdate(
+      { user: req.user.id },
+      {
+        ...req.body,
+      },
+    );
 
-  const userInfo = await UserInfo.findOneAndUpdate(
-    { _id: id },
-    {
-      ...req.body,
-    },
-  );
+    // if (!userInfo) {
+    //   res.status(400).json({ error: "No user found" });
+    // }
 
-  if (!userInfo) {
+    res.status(200).json(userInfo);
+  } catch (error) {
     res.status(400).json({ error: "No user found" });
   }
-
-  res.status(200).json(userInfo);
 };
 module.exports = {
   getProfileInfo,
