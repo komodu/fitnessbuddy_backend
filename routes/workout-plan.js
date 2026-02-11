@@ -4,13 +4,16 @@ const {
   createUserPlan,
   getWorkoutPlansTemplates,
   createWorkoutPlanTemplate,
-  getCurrentUserPlan,
+  getActivePlan,
+  getAllUserPlan,
 } = require("../controllers/workoutPlan.controller");
 const workoutPlanRouter = express.Router();
 
 workoutPlanRouter.post("/", createWorkoutPlanTemplate);
 workoutPlanRouter.get("/", getWorkoutPlansTemplates);
 workoutPlanRouter.post("/userplan", authenticateToken, createUserPlan);
-workoutPlanRouter.get("/userplan", authenticateToken, getCurrentUserPlan);
 
+workoutPlanRouter.get("/get-plans", authenticateToken, getAllUserPlan);
+workoutPlanRouter.get("/userplan", authenticateToken, getActivePlan);
+// getActivePlan
 module.exports = workoutPlanRouter;

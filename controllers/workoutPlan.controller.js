@@ -4,7 +4,7 @@ const generateWeeklySchedule = require("../utils/generateWeeklySchedule.js");
 
 const WorkoutType = require("../models/workoutType.js");
 const WorkoutPlanTemplate = require("../models/workoutPlanTemplate.js");
-const getWorkoutForDate = require("../utils/getWorkoutForDates.js");
+const getWorkoutForDays = require("../utils/getWorkoutForDays.js");
 
 const createWorkoutPlanTemplate = async (req, res) => {
   try {
@@ -81,60 +81,76 @@ const createUserPlan = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+const days = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+];
 
-const getCurrentUserPlan = async (req, res) => {
-  //! TODO: Create controller for this and remove the fetching for every day
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // normalize to midnight
-  console.log("TODAY: ", today);
-  const userPlan = await UserWorkoutPlan.findOne({
-    user: req.user.id,
-  }).populate({
-    path: "planTemplate",
-    populate: {
-      path: Object.values({
-        monday: "weeklySchedule.monday",
-        tuesday: "weeklySchedule.tuesday",
-        wednesday: "weeklySchedule.wednesday",
-        thursday: "weeklySchedule.thursday",
-        friday: "weeklySchedule.friday",
-        saturday: "weeklySchedule.saturday",
-        sunday: "weeklySchedule.sunday",
-      }).join(" "),
-    },
-  });
+const getAllUserPlan = async (req, res) => {
+  console.log("useriD in AllUserPlan Route: ", req.user.id);
+  try {
+    const nestedPopulate = days.map((day) => ({
+      path: `weeklySchedule.${day}`,
+    }));
 
-  if (!userPlan) {
-    return res.status(404).json({ message: "No workout plan found" });
+    const allPlans = await UserWorkoutPlan.find({ user: req.user.id }).populate(
+      {
+        path: "planTemplate",
+        populate: nestedPopulate,
+      },
+    );
+    console.log("allPlans: ", allPlans);
+    if (!allPlans) {
+      throw new Error("User plans not found");
+    }
+
+    return res.status(200).json(allPlans);
+  } catch (error) {
+    console.log("error:", error);
+    return res.status(500).json({ message: error.message });
   }
-
-  const { day, workout } = getWorkoutForDate(today, userPlan.planTemplate);
-
-  if (!workout) {
-    return res.status(404).json({
-      message: `No workout assigned for ${day}`,
-    });
-  }
-
-  const exercisesForTheDay = await Exercises.find({
-    workoutType: workout._id,
-  });
-  if (!exercisesForTheDay) {
-    return res
-      .status(404)
-      .json({ message: `No workout assigned for ${workout.name}` });
-  }
-  console.log("WKLEHJAKL: ", workout._id);
-  return res.json({
-    userPlan,
-    date: today,
-    day,
-    workoutType: workout.name,
-    exercises: exercisesForTheDay,
-  });
 };
+const getActivePlan = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // normalize to midnight
+
+    const activePlan = await UserWorkoutPlan.findOne({
+      user: req.user.id,
+      startDate: { $lte: today }, // startDate <= today
+      endDate: { $gte: today }, // endDate >= today
+    }).populate({
+      path: "planTemplate",
+      populate: [
+        { path: "weeklySchedule.monday" },
+        { path: "weeklySchedule.tuesday" },
+        { path: "weeklySchedule.wednesday" },
+        { path: "weeklySchedule.thursday" },
+        { path: "weeklySchedule.friday" },
+        { path: "weeklySchedule.saturday" },
+        { path: "weeklySchedule.sunday" },
+      ],
+    });
+    if (!activePlan) {
+      return res.status(404).json({ message: "No active workout plan found" });
+    }
+    console.log("activePlan: ", activePlan);
+
+    return res.json(activePlan);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
-  getCurrentUserPlan,
+  getAllUserPlan,
+  getActivePlan,
   createUserPlan,
   getWorkoutPlansTemplates,
   createWorkoutPlanTemplate,
