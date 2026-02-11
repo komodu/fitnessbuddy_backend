@@ -17,6 +17,7 @@ const workoutPlanTemplateSchema = new mongoose.Schema({
     saturday: daySchema,
     sunday: daySchema,
   },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false },
 });
 module.exports = mongoose.model(
   "WorkoutPlanTemplate",

@@ -5,6 +5,15 @@ const generateWeeklySchedule = require("../utils/generateWeeklySchedule.js");
 const WorkoutType = require("../models/workoutType.js");
 const WorkoutPlanTemplate = require("../models/workoutPlanTemplate.js");
 const getWorkoutForDays = require("../utils/getWorkoutForDays.js");
+const days = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+];
 
 const createWorkoutPlanTemplate = async (req, res) => {
   try {
@@ -34,6 +43,7 @@ const createWorkoutPlanTemplate = async (req, res) => {
 
     //  Save template
     const template = await WorkoutPlanTemplate.create({
+      user: req.user.id,
       name,
       daysPerWeek,
       weeklySchedule,
@@ -47,11 +57,14 @@ const createWorkoutPlanTemplate = async (req, res) => {
 };
 
 const getWorkoutPlansTemplates = async (req, res) => {
+  const nestedPopulate = days.map((day) => ({
+    path: `${day}`,
+  }));
   try {
-    const templates = await WorkoutPlanTemplate.find({}).sort({
-      createdAt: -1,
-    });
-    console.log(templates);
+    const templates = await WorkoutPlanTemplate.find({
+      user: req.user.id,
+    }).populate({ path: "weeklySchedule", populate: nestedPopulate });
+    console.log("TEMPLATES: ", templates);
     res.status(201).json(templates);
   } catch (err) {
     console.log(err);
@@ -81,15 +94,6 @@ const createUserPlan = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
-const days = [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
-];
 
 const getAllUserPlan = async (req, res) => {
   console.log("useriD in AllUserPlan Route: ", req.user.id);

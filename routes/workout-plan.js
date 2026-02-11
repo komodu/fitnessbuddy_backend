@@ -9,8 +9,8 @@ const {
 } = require("../controllers/workoutPlan.controller");
 const workoutPlanRouter = express.Router();
 
-workoutPlanRouter.post("/", createWorkoutPlanTemplate);
-workoutPlanRouter.get("/", getWorkoutPlansTemplates);
+workoutPlanRouter.post("/", authenticateToken, createWorkoutPlanTemplate);
+workoutPlanRouter.get("/", authenticateToken, getWorkoutPlansTemplates);
 workoutPlanRouter.post("/userplan", authenticateToken, createUserPlan);
 
 workoutPlanRouter.get("/get-plans", authenticateToken, getAllUserPlan);
