@@ -121,6 +121,9 @@ const getAllUserPlan = async (req, res) => {
 };
 const getActivePlan = async (req, res) => {
   try {
+    const nestedPopulate = days.map((day) => ({
+      path: `weeklySchedule.${day}`,
+    }));
     const today = new Date();
     today.setHours(0, 0, 0, 0); // normalize to midnight
 
@@ -130,22 +133,14 @@ const getActivePlan = async (req, res) => {
       endDate: { $gte: today }, // endDate >= today
     }).populate({
       path: "planTemplate",
-      populate: [
-        { path: "weeklySchedule.monday" },
-        { path: "weeklySchedule.tuesday" },
-        { path: "weeklySchedule.wednesday" },
-        { path: "weeklySchedule.thursday" },
-        { path: "weeklySchedule.friday" },
-        { path: "weeklySchedule.saturday" },
-        { path: "weeklySchedule.sunday" },
-      ],
+      populate: nestedPopulate,
     });
     if (!activePlan) {
       return res.status(404).json({ message: "No active workout plan found" });
     }
-    console.log("activePlan: ", activePlan);
+    console.log("activePlan1zszszszs: ", activePlan);
 
-    return res.json(activePlan);
+    return res.status(200).json({ activePlan });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: error.message });
