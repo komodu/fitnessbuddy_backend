@@ -15,6 +15,13 @@ const exerciseSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    totalSet: {
+      type: Number,
+    },
+    completed: {
+      type: Boolean,
+    },
+
     workoutType: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "WorkoutType", // foreign key relationship

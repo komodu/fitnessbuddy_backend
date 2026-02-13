@@ -35,7 +35,7 @@ const getSingleExercise = async (req, res) => {
 
 // Post a new Workout
 const createExercise = async (req, res) => {
-  const { workoutType, title, load, reps } = req.body;
+  const { workoutType, title, set, load, reps } = req.body;
 
   let emptyFields = [];
 
@@ -48,6 +48,9 @@ const createExercise = async (req, res) => {
   if (!reps) {
     emptyFields.push("reps");
   }
+  if (!set) {
+    emptyFields.push("set");
+  }
   if (emptyFields.length > 0) {
     return res
       .status(400)
@@ -55,7 +58,13 @@ const createExercise = async (req, res) => {
   }
   console.log("create: ", workoutType);
   try {
-    const exercise = await Exercise.create({ workoutType, title, load, reps });
+    const exercise = await Exercise.create({
+      workoutType,
+      title,
+      totalSet: set,
+      load,
+      reps,
+    });
     // Populate to display fkey values after submission
     const populatedWorkout = await exercise.populate("workoutType", "name");
 
