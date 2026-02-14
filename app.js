@@ -8,6 +8,7 @@ const exerciseRoutes = require("./routes/exercises");
 const dashboardRoute = require("./routes/dashboard.route");
 const workoutTypeRoutes = require("./routes/workoutType");
 const authRoutes = require("./routes/auth.routes");
+const workoutSessionRoute = require("./routes/workoutsessions");
 const cors = require("cors");
 // Require Cookie Parser
 const cookieParser = require("cookie-parser");
@@ -39,5 +40,5 @@ app.use("/api/workout-types", workoutTypeRoutes);
 app.use("/api/workoutplan", workoutPlanRouter);
 app.use("/api/auth", authRoutes);
 app.use("/api/today", dashboardRoute);
-
+app.use("/api/workout-sessions", workoutSessionRoute);
 module.exports = app;

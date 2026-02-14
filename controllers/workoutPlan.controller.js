@@ -108,7 +108,6 @@ const getAllUserPlan = async (req, res) => {
         populate: nestedPopulate,
       },
     );
-    console.log("allPlans: ", allPlans);
     if (!allPlans) {
       throw new Error("User plans not found");
     }
@@ -138,7 +137,6 @@ const getActivePlan = async (req, res) => {
     if (!activePlan) {
       return res.status(404).json({ message: "No active workout plan found" });
     }
-    console.log("activePlan1zszszszs: ", activePlan);
 
     return res.status(200).json({ activePlan });
   } catch (error) {
