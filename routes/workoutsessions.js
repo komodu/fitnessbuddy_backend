@@ -1,8 +1,11 @@
 const express = require("express");
-const startWorkoutController = require("../controllers/startWorkout.controller");
+const {
+  startSessionController,
+  getActiveSession,
+} = require("../controllers/workoutSession.controller");
 const authToken = require("../middlewares/auth.middleware");
-const startWorkoutRouter = express.Router();
+const sessionRouter = express.Router();
 
-startWorkoutRouter.post("/start", authToken, startWorkoutController);
-
-module.exports = startWorkoutRouter;
+sessionRouter.post("/start", authToken, startSessionController);
+sessionRouter.get("/", authToken, getActiveSession);
+module.exports = sessionRouter;

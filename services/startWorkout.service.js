@@ -2,7 +2,7 @@ const WorkoutSession = require("../models/workoutSession");
 const WorkoutType = require("../models/workoutType");
 const Exercises = require("../models/exerciseModel");
 
-const startSession = async ({ userId, planId, workoutTypeId }) => {
+const startSessionService = async ({ userId, planId, workoutTypeId }) => {
   console.log("session: userid: ", userId);
   console.log("session: PLANID: ", planId);
   console.log("session: workouttypeID: ", workoutTypeId);
@@ -39,4 +39,14 @@ const startSession = async ({ userId, planId, workoutTypeId }) => {
   return workoutSession;
 };
 
-module.exports = startSession;
+const getActiveService = async ({ userId }) => {
+  const workoutSession = await WorkoutSession.findOne({
+    user: userId,
+    status: "active",
+  });
+  if (!workoutSession) {
+    return "No Active session found";
+  }
+  return workoutSession;
+};
+module.exports = { startSessionService, getActiveService };
