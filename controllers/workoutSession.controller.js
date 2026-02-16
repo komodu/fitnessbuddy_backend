@@ -24,8 +24,9 @@ const startSessionController = async (req, res) => {
 
 const getActiveSession = async (req, res) => {
   const userId = req.user.id;
+  const today = new Date();
   try {
-    const activeSession = await getActiveService({ userId });
+    const activeSession = await getActiveService({ userId, today });
 
     res.status(200).json(activeSession);
   } catch (err) {

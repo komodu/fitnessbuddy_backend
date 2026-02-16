@@ -39,14 +39,15 @@ const startSessionService = async ({ userId, planId, workoutTypeId }) => {
   return workoutSession;
 };
 
-const getActiveService = async ({ userId }) => {
+const getActiveService = async ({ userId, today }) => {
+  console.log("activeService", today);
   const workoutSession = await WorkoutSession.findOne({
     user: userId,
     status: "active",
+    startTime: today,
+    endTime: null,
   });
-  if (!workoutSession) {
-    return "No Active session found";
-  }
+  if (!workoutSession) throw new Error("No workout session found");
   return workoutSession;
 };
 module.exports = { startSessionService, getActiveService };
