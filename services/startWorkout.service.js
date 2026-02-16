@@ -50,4 +50,5 @@ const getActiveService = async ({ userId, today }) => {
   if (!workoutSession) throw new Error("No workout session found");
   return workoutSession;
 };
+
 module.exports = { startSessionService, getActiveService };
