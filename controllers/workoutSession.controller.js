@@ -1,3 +1,5 @@
+const WorkoutSession = require("../models/workoutSession");
+
 const {
   startSessionService,
   getActiveService,
@@ -6,9 +8,7 @@ const {
 const startSessionController = async (req, res) => {
   const userId = req.user.id;
   const { planId, workoutTypeId } = req.body;
-  console.log("planId: ", planId);
-  console.log("workoutTypeId: ", workoutTypeId);
-  console.log("start: ", req.body);
+
   try {
     const workoutSession = await startSessionService({
       userId,
@@ -24,9 +24,9 @@ const startSessionController = async (req, res) => {
 
 const getActiveSession = async (req, res) => {
   const userId = req.user.id;
-  const today = new Date();
+
   try {
-    const activeSession = await getActiveService({ userId, today });
+    const activeSession = await getActiveService({ userId });
 
     res.status(200).json(activeSession);
   } catch (err) {
@@ -35,48 +35,63 @@ const getActiveSession = async (req, res) => {
 };
 
 const addSet = async (req, res) => {
-  const userId = req.user._id; // authenticated user
-  const today = new Date();
+  const userId = req.user.id;
   const { exerciseId, reps, weight, duration, restTime } = req.body;
 
-  // Find active session
   const session = await WorkoutSession.findOne({
     user: userId,
     status: "active",
-    startTime: today,
   });
+
   if (!session) {
     return res.status(400).json({ message: "No active workout session found" });
   }
 
-  // Find the exercise in the session
-  const exerciseEntry = session.exercises.find(
-    (ex) => ex.exercise.toString() === exerciseId,
-  );
+  let exerciseEntry = null;
+
+  for (const workoutType of session.workoutTypes) {
+    const found = workoutType.exercises.find(
+      (ex) => ex.exercise.toString() === exerciseId.toString(),
+    );
+
+    if (found) {
+      exerciseEntry = found;
+      break;
+    }
+  }
+
   if (!exerciseEntry) {
     return res
       .status(400)
       .json({ message: "Exercise not part of this session" });
   }
 
-  // Add the new set
   exerciseEntry.sets.push({
     reps,
     weight,
     duration,
-    restTime, //! Currently defaulted to 60 : must be dynamic based on the User's Profile
+    restTime,
     completedAt: new Date(),
   });
 
-  // Update totalVolume
-  session.totalVolume = session.exercises.reduce((total, ex) => {
+  session.totalVolume = session.workoutTypes.reduce((total, wt) => {
     return (
-      total + ex.sets.reduce((sum, s) => sum + s.reps * (s.weight || 0), 0)
+      total +
+      wt.exercises.reduce((exerciseTotal, ex) => {
+        return (
+          exerciseTotal +
+          ex.sets.reduce(
+            (setTotal, s) => setTotal + s.reps * (s.weight || 0),
+            0,
+          )
+        );
+      }, 0)
     );
   }, 0);
 
   await session.save();
 
-  res.json(session); // return updated session
+  res.json(session);
 };
+
 module.exports = { getActiveSession, startSessionController, addSet };
