@@ -1,5 +1,6 @@
 const WorkoutSession = require("../models/workoutSession");
 
+// ! REFACTOR : Controllers are for logics, Service are the ones who communicate with Models
 const {
   startSessionService,
   getActiveService,
@@ -24,10 +25,9 @@ const startSessionController = async (req, res) => {
 
 const getActiveSession = async (req, res) => {
   const userId = req.user.id;
-
+  const today = new Date();
   try {
-    const activeSession = await getActiveService({ userId });
-
+    const activeSession = await getActiveService({ userId, today });
     res.status(200).json(activeSession);
   } catch (err) {
     res.status(400).json({ message: err });
@@ -48,6 +48,7 @@ const addSet = async (req, res) => {
   }
 
   let exerciseEntry = null;
+  //!  ISSUE: Validation Needed in fetching workoutsess when workout is not completed
 
   for (const workoutType of session.workoutTypes) {
     const found = workoutType.exercises.find(
@@ -94,4 +95,41 @@ const addSet = async (req, res) => {
   res.json(session);
 };
 
-module.exports = { getActiveSession, startSessionController, addSet };
+const completeSet = async (req, res) => {
+  const today = new Date();
+  const { sessionId } = req.body;
+
+  console.log("complete: ", sessionId);
+  if (!sessionId) {
+    return res.status(400).json({ message: "Session ID is Required" });
+  }
+
+  const session = await WorkoutSession.findOneAndUpdate({
+    _id: sessionId,
+    user: req.user.id,
+    status: "active",
+    startTime: { $lte: today },
+    endTime: { $gte: today },
+  });
+
+  if (!session) {
+    return res.status(400).json({ message: "Session not found" });
+  }
+  if (session.status === "completed") {
+    return res.status(400).json({
+      message: "Workout already completed for today",
+    });
+  }
+
+  // Mark as completed
+  session.status = "completed";
+
+  await session.save();
+  return res.status(200).json(session);
+};
+module.exports = {
+  completeSet,
+  getActiveSession,
+  startSessionController,
+  addSet,
+};

@@ -25,13 +25,15 @@ const startSessionService = async ({ userId, planId, workoutTypeId }) => {
       sets: [], // empty initially
     })),
   };
-
+  const endTime = new Date();
+  endTime.setHours(23, 59, 59);
+  console.log("endTime: ", endTime);
   //  Create session
   const workoutSession = await WorkoutSession.create({
     user: userId,
     plan: planId,
     startTime: new Date(),
-    endTime: null,
+    endTime: endTime,
     status: "active",
     workoutTypes: [formattedWorkoutType],
   });
@@ -39,11 +41,12 @@ const startSessionService = async ({ userId, planId, workoutTypeId }) => {
   return workoutSession;
 };
 
-const getActiveService = async ({ userId }) => {
+const getActiveService = async ({ userId, today }) => {
   const workoutSession = await WorkoutSession.findOne({
     user: userId,
     status: "active",
-    endTime: null,
+    startTime: { $lte: today },
+    endTime: { $gte: today },
   });
   if (!workoutSession) throw new Error("No workout session found");
   return workoutSession;
