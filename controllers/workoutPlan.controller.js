@@ -145,7 +145,21 @@ const getActivePlan = async (req, res) => {
   }
 };
 
+const deleteWorkoutPlan = async (req, res) => {
+  const userId = req.user.id;
+  const { id } = req.params;
+  console.log("PLAN:ID:::", id);
+  const plan = await UserWorkoutPlan.findOneAndDelete({
+    user: userId,
+    _id: id,
+  });
+
+  if (!plan) return res.status(400).json({ error: "No such Workout Plan" });
+  res.status(200).json(plan);
+};
+
 module.exports = {
+  deleteWorkoutPlan,
   getAllUserPlan,
   getActivePlan,
   createUserPlan,
