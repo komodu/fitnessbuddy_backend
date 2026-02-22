@@ -55,20 +55,76 @@ const createWorkoutPlanTemplate = async (req, res) => {
     res.status(500).json({ error: err.message, req: req.body });
   }
 };
-
 const getWorkoutPlansTemplates = async (req, res) => {
-  const nestedPopulate = days.map((day) => ({
-    path: `${day}`,
-  }));
   try {
+    // 1️⃣ Populate weeklySchedule and nested day refs
     const templates = await WorkoutPlanTemplate.find({
       user: req.user.id,
-    }).populate({ path: "weeklySchedule", populate: nestedPopulate });
-    console.log("TEMPLATES: ", templates);
-    res.status(201).json(templates);
-  } catch (err) {
-    console.log(err);
-    res.status(400).json({ message: err.message });
+    }).populate({
+      path: "weeklySchedule",
+      populate: days.map((day) => ({ path: day })),
+    });
+
+    if (!templates.length) {
+      return res.status(200).json([]);
+    }
+
+    // 2️⃣ Collect unique workoutTypes
+    const workoutTypesSet = new Set();
+
+    templates.forEach((template) => {
+      const scheduleObj = template.weeklySchedule;
+      if (!scheduleObj) return;
+
+      days.forEach((day) => {
+        const dayData = scheduleObj[day];
+
+        if (dayData && dayData._id) {
+          workoutTypesSet.add(dayData._id);
+        }
+      });
+    });
+
+    const workoutTypes = [...workoutTypesSet];
+
+    //  Fetch exercises once
+    const exercises = await Exercises.find({
+      workoutType: { $in: workoutTypes },
+    });
+
+    //  Group exercises by workoutType
+    const exerciseMap = exercises.reduce((acc, exercise) => {
+      if (!acc[exercise.workoutType]) {
+        acc[exercise.workoutType] = [];
+      }
+      acc[exercise.workoutType].push(exercise);
+      return acc;
+    }, {});
+
+    //  Attach exercises per day
+    const formattedTemplates = templates.map((template) => {
+      const templateObj = template.toObject();
+      const scheduleObj = templateObj.weeklySchedule;
+
+      if (!scheduleObj) return templateObj;
+
+      days.forEach((day) => {
+        const dayData = scheduleObj[day];
+        if (dayData && dayData.name) {
+          dayData.exercises = exerciseMap[dayData._id] || [];
+        }
+      });
+
+      return templateObj;
+    });
+
+    res.status(200).json(formattedTemplates);
+  } catch (error) {
+    console.error("getWorkoutPlansTemplates error:", error);
+    res.status(500).json({
+      message: "Failed to fetch workout templates",
+      error: error.message,
+    });
   }
 };
 
