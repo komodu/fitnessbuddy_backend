@@ -1,10 +1,15 @@
 // models/UserWorkoutPlan.js
+const { text } = require("express");
 const mongoose = require("mongoose");
 
 const userWorkoutPlanSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
+    required: true,
+  },
+  planName: {
+    type: String,
     required: true,
   },
   planTemplate: {

@@ -50,6 +50,7 @@ const createWorkoutPlanTemplate = async (req, res) => {
     });
 
     console.log("template: ", template);
+
     res.status(201).json(template);
   } catch (err) {
     res.status(500).json({ error: err.message, req: req.body });
@@ -130,8 +131,17 @@ const getWorkoutPlansTemplates = async (req, res) => {
 
 const createUserPlan = async (req, res) => {
   try {
+    const nestedPopulate = days.map((day) => ({
+      path: `weeklySchedule.${day}`,
+    }));
+
     const userId = req.user.id;
-    const { planTemplate: selectedTemplate, startDate, endDate } = req.body;
+    const {
+      planName,
+      planTemplate: selectedTemplate,
+      startDate,
+      endDate,
+    } = req.body;
     console.log(userId);
     console.log(selectedTemplate);
     console.log(startDate);
@@ -140,11 +150,26 @@ const createUserPlan = async (req, res) => {
 
     const createdPlan = await UserWorkoutPlan.create({
       user: userId,
+      planName: planName,
       planTemplate: selectedTemplate,
       startDate: startDate,
       endDate: endDate,
     });
-    res.status(201).json({ message: "Success", data: createdPlan });
+
+    if (!createdPlan) throw new Error("Failed to create new Plan");
+    const newPlan = await UserWorkoutPlan.findOne({
+      planName,
+      planTemplate: selectedTemplate,
+      startDate,
+      endDate,
+    });
+
+    const populatedPlan = await UserWorkoutPlan.findById(newPlan._id).populate({
+      path: "planTemplate",
+      populate: nestedPopulate,
+    });
+    console.log("popultaed:", populatedPlan);
+    res.status(201).json({ message: "Success", data: populatedPlan });
   } catch (err) {
     console.log("error in creating: ", err);
     res.status(400).json({ message: err.message });
