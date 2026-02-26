@@ -41,4 +41,5 @@ app.use("/api/workoutplan", workoutPlanRouter);
 app.use("/api/auth", authRoutes);
 app.use("/api/today", dashboardRoute);
 app.use("/api/workout-sessions", sessionRouter);
+
 module.exports = app;

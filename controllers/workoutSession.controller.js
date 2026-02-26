@@ -1,5 +1,5 @@
 const WorkoutSession = require("../models/workoutSession");
-
+const { getAllSessionService } = require("../services/session.service");
 // ! REFACTOR : Controllers are for logics, Service are the ones who communicate with Models
 const {
   startSessionService,
@@ -20,6 +20,19 @@ const startSessionController = async (req, res) => {
     res.status(200).json(workoutSession);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+const getAllSessions = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const allSessions = await getAllSessionService({ userId });
+
+    if (!allSessions) throw new Error("Error fetching all Sessions");
+    console.log("SEISOSN: ", allSessions);
+    res.status(200).json(allSessions);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
 };
 
@@ -51,10 +64,10 @@ const addSet = async (req, res) => {
   //!  ISSUE: Validation Needed in fetching workoutsess when workout is not completed
 
   for (const workoutType of session.workoutTypes) {
-    const found = workoutType.exercises.find(
-      (ex) => ex.exercise.toString() === exerciseId.toString(),
-    );
-
+    const found = workoutType.exercises.find((ex) => {
+      return ex.exercise.toString() == exerciseId.toString();
+    });
+    console.log("found: ", found);
     if (found) {
       exerciseEntry = found;
       break;
@@ -130,6 +143,7 @@ const completeSet = async (req, res) => {
 module.exports = {
   completeSet,
   getActiveSession,
+  getAllSessions,
   startSessionController,
   addSet,
 };
