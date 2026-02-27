@@ -1,18 +1,16 @@
-const UserWorkoutPlan = require("../models/userWorkoutPlan");
-const Execise = require("../models/exerciseModel");
 const getWorkoutForDays = require("../utils/getWorkoutForDays");
+const {
+  getTodayWorkoutPlanService,
+  getTodayExerciseService,
+} = require("../services/dashboard.service");
+
 const getTodayWorkout = async (req, res) => {
   // Ensures Token is processed
   const userId = req.user.id;
 
   // Checks the User's Workout Plan
-  const userPlan = await UserWorkoutPlan.findOne({
+  const userPlan = await getTodayWorkoutPlanService({
     user: userId,
-  }).populate({
-    path: "planTemplate",
-    populate: {
-      path: "weeklySchedule.monday weeklySchedule.tuesday weeklySchedule.wednesday weeklySchedule.thursday weeklySchedule.friday weeklySchedule.saturday weeklySchedule.sunday",
-    },
   });
   console.log("userPlan: ", userPlan);
   if (!userPlan) {
@@ -24,7 +22,7 @@ const getTodayWorkout = async (req, res) => {
   const workoutType = getWorkoutForDays(today, userPlan.planTemplate);
 
   // Find Exercises for the Day based on Workout Type Assigned on the Day
-  const exercisesForTheDay = await Execise.find({
+  const exercisesForTheDay = await getTodayExerciseService({
     workoutType: workoutType.exercises._id,
   });
 

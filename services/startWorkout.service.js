@@ -41,10 +41,10 @@ const startSessionService = async ({ userId, planId, workoutTypeId }) => {
   return workoutSession;
 };
 
-const getActiveService = async ({ userId, today }) => {
+const getSessionTodayService = async ({ userId, today }) => {
   const workoutSession = await WorkoutSession.findOne({
     user: userId,
-    status: "active",
+
     startTime: { $lte: today },
     endTime: { $gte: today },
   });
@@ -52,4 +52,4 @@ const getActiveService = async ({ userId, today }) => {
   return workoutSession;
 };
 
-module.exports = { startSessionService, getActiveService };
+module.exports = { startSessionService, getSessionTodayService };

@@ -3,7 +3,7 @@ const { getAllSessionService } = require("../services/session.service");
 // ! REFACTOR : Controllers are for logics, Service are the ones who communicate with Models
 const {
   startSessionService,
-  getActiveService,
+  getSessionTodayService,
 } = require("../services/startWorkout.service");
 
 const startSessionController = async (req, res) => {
@@ -36,12 +36,12 @@ const getAllSessions = async (req, res) => {
   }
 };
 
-const getActiveSession = async (req, res) => {
+const getTodaySession = async (req, res) => {
   const userId = req.user.id;
   const today = new Date();
   try {
-    const activeSession = await getActiveService({ userId, today });
-    res.status(200).json(activeSession);
+    const todaySession = await getSessionTodayService({ userId, today });
+    res.status(200).json(todaySession);
   } catch (err) {
     res.status(400).json({ message: err });
   }
@@ -142,7 +142,7 @@ const completeSet = async (req, res) => {
 };
 module.exports = {
   completeSet,
-  getActiveSession,
+  getTodaySession,
   getAllSessions,
   startSessionController,
   addSet,
