@@ -1,16 +1,18 @@
-const Exercise = require("../models/exerciseModel");
-
-const mongoose = require("mongoose");
+const {
+  getExercisesService,
+  getSingleExerciseService,
+  createExerciseService,
+  deleteExerciseService,
+  updateExerciseService,
+} = require("../services/exercise.service");
 
 // API
 
 // Get all Exercises and Populate value 'name'
 const getExercises = async (req, res) => {
   try {
-    const exercises = await Exercise.find({})
-      .sort({ createdAt: -1 }) // Sort workouts by descending order
-      .populate("workoutType", "name"); // Populate the name value
-    res.status(201).json(exercises);
+    const exercises = await getExercisesService();
+    res.status(200).json(exercises);
   } catch (error) {
     console.error("Error fetching Exercise: ", error);
     res.status(500).json({ error: "Failed to fetch Exercises" });
@@ -19,18 +21,15 @@ const getExercises = async (req, res) => {
 
 // Get Single Exercise
 const getSingleExercise = async (req, res) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(404).json({ error: "No such workout" });
+    const exercise = await getSingleExerciseService(id);
+
+    return exercise;
+  } catch (error) {
+    console.log(error);
   }
-
-  const exercise = await Exercise.findById(id);
-
-  if (!exercise) {
-    res.status(400).json({ error: "No such workout" });
-  }
-  res.status(200).json(exercise);
 };
 
 // Post a new Workout
@@ -58,7 +57,7 @@ const createExercise = async (req, res) => {
   }
   console.log("create: ", workoutType);
   try {
-    const exercise = await Exercise.create({
+    const exercise = await createExerciseService({
       workoutType,
       title,
       totalSet: set,
@@ -78,11 +77,11 @@ const createExercise = async (req, res) => {
 const deleteExercise = async (req, res) => {
   const { id } = req.params;
   console.log("delete_id: ", id);
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(404).json({ error: "No such exercise" });
-  }
+  // if (!mongoose.Types.ObjectId.isValid(id)) {
+  //   return res.status(404).json({ error: "No such exercise" });
+  // }
 
-  const exercise = await Exercise.findOneAndDelete({ _id: id });
+  const exercise = await deleteExerciseService({ _id: id });
   if (!exercise) {
     return res.status(400).json({ error: "No such exercise" });
   }
@@ -92,17 +91,12 @@ const deleteExercise = async (req, res) => {
 // Update/Put a workout
 const updateExercise = async (req, res) => {
   const { id } = req.params;
+  const { data } = req.body;
+  // if (!mongoose.Types.ObjectId.isValid(id)) {
+  //   return res.status(404).json({ error: "No such exercise" });
+  // }
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(404).json({ error: "No such exercise" });
-  }
-
-  const exercise = await Exercise.findOneAndUpdate(
-    { _id: id },
-    {
-      ...req.body,
-    },
-  );
+  const exercise = await updateExerciseService(id, data);
   if (!exercise) {
     return res.status(400).json({ error: "No such exercise" });
   }

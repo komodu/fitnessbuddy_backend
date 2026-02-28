@@ -1,10 +1,13 @@
-const UserWorkoutPlan = require("../models/userWorkoutPlan");
-const Exercises = require("../models/exerciseModel.js");
-const generateWeeklySchedule = require("../utils/generateWeeklySchedule.js");
+const {
+  createWorkoutPlanTemplateService,
+  getWorkoutPlanTemplatesService,
 
-const WorkoutType = require("../models/workoutType.js");
-const WorkoutPlanTemplate = require("../models/workoutPlanTemplate.js");
-const getWorkoutForDays = require("../utils/getWorkoutForDays.js");
+  getAllUserPlanService,
+  getActivePlanService,
+  deletePlanService,
+} = require("../services/workoutPlan.service.js");
+
+const { getExerciseInWorkout } = require("../services/exercise.service.js");
 const days = [
   "monday",
   "tuesday",
@@ -42,7 +45,7 @@ const createWorkoutPlanTemplate = async (req, res) => {
     );
 
     //  Save template
-    const template = await WorkoutPlanTemplate.create({
+    const template = await createWorkoutPlanTemplateService({
       user: req.user.id,
       name,
       daysPerWeek,
@@ -58,19 +61,14 @@ const createWorkoutPlanTemplate = async (req, res) => {
 };
 const getWorkoutPlansTemplates = async (req, res) => {
   try {
-    // 1️⃣ Populate weeklySchedule and nested day refs
-    const templates = await WorkoutPlanTemplate.find({
-      user: req.user.id,
-    }).populate({
-      path: "weeklySchedule",
-      populate: days.map((day) => ({ path: day })),
-    });
+    const id = req.user.id;
+    //  Populate weeklySchedule and nested day refs
+    const templates = await getWorkoutPlanTemplatesService(id);
 
-    if (!templates.length) {
-      return res.status(200).json([]);
-    }
+    // if (!templates.length) {
+    //   return res.status(200).json([]);
+    // }
 
-    // 2️⃣ Collect unique workoutTypes
     const workoutTypesSet = new Set();
 
     templates.forEach((template) => {
@@ -89,9 +87,7 @@ const getWorkoutPlansTemplates = async (req, res) => {
     const workoutTypes = [...workoutTypesSet];
 
     //  Fetch exercises once
-    const exercises = await Exercises.find({
-      workoutType: { $in: workoutTypes },
-    });
+    const exercises = await getExerciseInWorkout(workoutTypes);
 
     //  Group exercises by workoutType
     const exerciseMap = exercises.reduce((acc, exercise) => {
@@ -129,6 +125,7 @@ const getWorkoutPlansTemplates = async (req, res) => {
   }
 };
 
+//! UserWorkoutPlan
 const createUserPlan = async (req, res) => {
   try {
     const nestedPopulate = days.map((day) => ({
@@ -179,71 +176,51 @@ const createUserPlan = async (req, res) => {
 const getAllUserPlan = async (req, res) => {
   console.log("useriD in AllUserPlan Route: ", req.user.id);
   try {
-    const nestedPopulate = days.map((day) => ({
-      path: `weeklySchedule.${day}`,
-    }));
+    const { id } = req.user.id;
+    const allPlans = await getAllUserPlanService(id);
 
-    const allPlans = await UserWorkoutPlan.find({ user: req.user.id }).populate(
-      {
-        path: "planTemplate",
-        populate: nestedPopulate,
-      },
-    );
-    if (!allPlans) {
-      throw new Error("User plans not found");
-    }
-
-    return res.status(200).json(allPlans);
+    res.status(200).json(allPlans);
   } catch (error) {
     console.log("error:", error);
-    return res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
+
 const getActivePlan = async (req, res) => {
   try {
-    const nestedPopulate = days.map((day) => ({
-      path: `weeklySchedule.${day}`,
-    }));
+    const id = req.user.id;
     const today = new Date();
     today.setHours(0, 0, 0, 0); // normalize to midnight
 
-    const activePlan = await UserWorkoutPlan.findOne({
-      user: req.user.id,
-      startDate: { $lte: today }, // startDate <= today
-      endDate: { $gte: today }, // endDate >= today
-    }).populate({
-      path: "planTemplate",
-      populate: nestedPopulate,
-    });
-    if (!activePlan) {
-      return res.status(404).json({ message: "No active workout plan found" });
-    }
+    const activePlan = await getActivePlanService(id, today);
 
-    return res.status(200).json({ activePlan });
+    res.status(200).json(activePlan);
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
 const deleteWorkoutPlan = async (req, res) => {
-  const userId = req.user.id;
-  const { id } = req.params;
-  console.log("PLAN:ID:::", id);
-  const plan = await UserWorkoutPlan.findOneAndDelete({
-    user: userId,
-    _id: id,
-  });
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    console.log("PLAN:ID:::", id);
+    const plan = await deletePlanService(userId, id);
 
-  if (!plan) return res.status(400).json({ error: "No such Workout Plan" });
-  res.status(200).json(plan);
+    if (!plan) return res.status(400).json({ error: "No such Workout Plan" });
+    res.status(200).json(plan);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 module.exports = {
+  getWorkoutPlansTemplates,
+  createWorkoutPlanTemplate,
+
   deleteWorkoutPlan,
   getAllUserPlan,
   getActivePlan,
   createUserPlan,
-  getWorkoutPlansTemplates,
-  createWorkoutPlanTemplate,
 };

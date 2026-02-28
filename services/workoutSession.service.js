@@ -2,6 +2,14 @@ const WorkoutSession = require("../models/workoutSession");
 const WorkoutType = require("../models/workoutType");
 const Exercises = require("../models/exerciseModel");
 
+const getAllSessionService = async ({ userId }) => {
+  const sessions = await WorkoutSession.find({ user: userId });
+
+  if (!sessions) throw new Error("Service Error Fetching Sessions");
+
+  return sessions;
+};
+
 const startSessionService = async ({ userId, planId, workoutTypeId }) => {
   console.log("session: userid: ", userId);
   console.log("session: PLANID: ", planId);
@@ -17,6 +25,7 @@ const startSessionService = async ({ userId, planId, workoutTypeId }) => {
   if (!exercises) {
     throw new Error("No exercise found");
   }
+
   //  Build exercises with empty sets
   const formattedWorkoutType = {
     workoutType: workoutType._id,
@@ -41,15 +50,44 @@ const startSessionService = async ({ userId, planId, workoutTypeId }) => {
   return workoutSession;
 };
 
-const getSessionTodayService = async ({ userId, today }) => {
+const getSessionTodayService = async (userId, today) => {
   const workoutSession = await WorkoutSession.findOne({
     user: userId,
 
     startTime: { $lte: today },
     endTime: { $gte: today },
   });
-  if (!workoutSession) throw new Error("No workout session found");
-  return workoutSession;
+  if (!workoutSession) throw new Error("Failed to get Today Session");
+  return workoutSession || null;
 };
 
-module.exports = { startSessionService, getSessionTodayService };
+const addSetService = async (id) => {
+  const session = await WorkoutSession.findOne({
+    user: id,
+    status: "active",
+  });
+  if (!session) {
+    throw new Error("Failed to add set in session");
+  }
+
+  return session;
+};
+
+const completeSetService = async (id, userId, today) => {
+  const session = await WorkoutSession.findOneAndUpdate({
+    _id: id,
+    user: userId,
+    startTime: { $lte: today },
+    endTime: { $gte: today },
+  });
+  if (!session) throw new Error("Failed to complete Session");
+  return session;
+};
+module.exports = {
+  getAllSessionService,
+  startSessionService,
+  getSessionTodayService,
+
+  addSetService,
+  completeSetService,
+};

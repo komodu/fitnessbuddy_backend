@@ -1,10 +1,12 @@
-const WorkoutSession = require("../models/workoutSession");
-const { getAllSessionService } = require("../services/session.service");
+const { getAllSessionService } = require("../services/workoutSession.service");
 // ! REFACTOR : Controllers are for logics, Service are the ones who communicate with Models
 const {
   startSessionService,
   getSessionTodayService,
-} = require("../services/startWorkout.service");
+
+  addSetService,
+  completeSetService,
+} = require("../services/workoutSession.service");
 
 const startSessionController = async (req, res) => {
   const userId = req.user.id;
@@ -28,8 +30,6 @@ const getAllSessions = async (req, res) => {
   try {
     const allSessions = await getAllSessionService({ userId });
 
-    if (!allSessions) throw new Error("Error fetching all Sessions");
-    console.log("SEISOSN: ", allSessions);
     res.status(200).json(allSessions);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -37,13 +37,17 @@ const getAllSessions = async (req, res) => {
 };
 
 const getTodaySession = async (req, res) => {
-  const userId = req.user.id;
-  const today = new Date();
   try {
-    const todaySession = await getSessionTodayService({ userId, today });
-    res.status(200).json(todaySession);
+    const userId = req.user.id;
+    const today = new Date();
+
+    console.log("today session2");
+    const todaySession = await getSessionTodayService(userId, today);
+    console.log("today session3");
+
+    return res.status(200).json(todaySession);
   } catch (err) {
-    res.status(400).json({ message: err });
+    return res.status(400).json({ message: err.message });
   }
 };
 
@@ -51,10 +55,7 @@ const addSet = async (req, res) => {
   const userId = req.user.id;
   const { exerciseId, reps, weight, duration, restTime } = req.body;
 
-  const session = await WorkoutSession.findOne({
-    user: userId,
-    status: "active",
-  });
+  const session = await addSetService(userId);
 
   if (!session) {
     return res.status(400).json({ message: "No active workout session found" });
@@ -110,20 +111,14 @@ const addSet = async (req, res) => {
 
 const completeSet = async (req, res) => {
   const today = new Date();
-  const { sessionId } = req.body;
-
+  const { id } = req.body;
+  const { userId } = req.user.id;
   console.log("complete: ", sessionId);
   if (!sessionId) {
     return res.status(400).json({ message: "Session ID is Required" });
   }
 
-  const session = await WorkoutSession.findOneAndUpdate({
-    _id: sessionId,
-    user: req.user.id,
-    status: "active",
-    startTime: { $lte: today },
-    endTime: { $gte: today },
-  });
+  const session = await completeSetService(id, userId, today);
 
   if (!session) {
     return res.status(400).json({ message: "Session not found" });
