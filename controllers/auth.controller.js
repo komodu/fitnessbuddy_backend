@@ -39,6 +39,7 @@ exports.register = async (req, res) => {
       maxAge: 1000 * 60 * 15,
     });
 
+    // Success
     res.json({
       message: "User registered successfully",
       user: registerUserInfo,

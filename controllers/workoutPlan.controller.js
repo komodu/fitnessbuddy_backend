@@ -20,13 +20,11 @@ const days = [
 
 const createWorkoutPlanTemplate = async (req, res) => {
   try {
-    console.log("reqbody1: ", req.body);
     const {
       name,
       daysPerWeek,
       workoutTypeIds, // array from frontend
     } = req.body;
-    console.log("reqbody2: ", req.body);
 
     // Find REST workout type
     const restWorkoutType = await WorkoutType.findOne({ name: "Rest" });
@@ -59,15 +57,12 @@ const createWorkoutPlanTemplate = async (req, res) => {
     res.status(500).json({ error: err.message, req: req.body });
   }
 };
+
 const getWorkoutPlansTemplates = async (req, res) => {
   try {
     const id = req.user.id;
     //  Populate weeklySchedule and nested day refs
     const templates = await getWorkoutPlanTemplatesService(id);
-
-    // if (!templates.length) {
-    //   return res.status(200).json([]);
-    // }
 
     const workoutTypesSet = new Set();
 
@@ -125,7 +120,7 @@ const getWorkoutPlansTemplates = async (req, res) => {
   }
 };
 
-//! UserWorkoutPlan
+// UserWorkoutPlans
 const createUserPlan = async (req, res) => {
   try {
     const nestedPopulate = days.map((day) => ({
@@ -143,7 +138,7 @@ const createUserPlan = async (req, res) => {
     console.log(selectedTemplate);
     console.log(startDate);
     console.log(endDate);
-    // ! Create validations & date must not conflict
+    // TODO: ! Create validations & date must not conflict
 
     const createdPlan = await UserWorkoutPlan.create({
       user: userId,
