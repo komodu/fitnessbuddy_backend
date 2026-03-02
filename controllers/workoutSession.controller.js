@@ -18,7 +18,7 @@ const startSessionController = async (req, res) => {
       planId,
       workoutTypeId,
     });
-    console.log("workoutSess: ", workoutSession);
+
     res.status(200).json(workoutSession);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -41,9 +41,7 @@ const getTodaySession = async (req, res) => {
     const userId = req.user.id;
     const today = new Date();
 
-    console.log("today session2");
     const todaySession = await getSessionTodayService(userId, today);
-    console.log("today session3");
 
     return res.status(200).json(todaySession);
   } catch (err) {
@@ -110,35 +108,21 @@ const addSet = async (req, res) => {
 };
 
 const completeSet = async (req, res) => {
-  const today = new Date();
-  const { id } = req.body;
-  const { userId } = req.user.id;
-  console.log("complete: ", sessionId);
-  if (!sessionId) {
-    return res.status(400).json({ message: "Session ID is Required" });
+  try {
+    const today = new Date();
+    const { id } = req.body;
+    const { userId } = req.user.id;
+    const session = await completeSetService(id, userId);
+
+    res.status(200).json(session);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-
-  const session = await completeSetService(id, userId, today);
-
-  if (!session) {
-    return res.status(400).json({ message: "Session not found" });
-  }
-  if (session.status === "completed") {
-    return res.status(400).json({
-      message: "Workout already completed for today",
-    });
-  }
-
-  // Mark as completed
-  session.status = "completed";
-
-  await session.save();
-  return res.status(200).json(session);
 };
 module.exports = {
-  completeSet,
   getTodaySession,
   getAllSessions,
   startSessionController,
   addSet,
+  completeSet,
 };

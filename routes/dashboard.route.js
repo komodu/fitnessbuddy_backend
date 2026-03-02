@@ -1,8 +1,8 @@
 const express = require("express");
-const { getTodayWorkout } = require("../controllers/dashboard.controller");
+const dashboardController = require("../controllers/dashboard.controller");
 const authToken = require("../middlewares/auth.middleware");
 const dashboardRoutes = express.Router();
 
-dashboardRoutes.get("/", authToken, getTodayWorkout);
+dashboardRoutes.get("/", authToken, dashboardController.getTodayWorkout);
 
 module.exports = dashboardRoutes;

@@ -25,6 +25,24 @@ const createExerciseService = async (
   load,
   reps,
 ) => {
+  let emptyFields = [];
+
+  if (!title) {
+    emptyFields.push("title");
+  }
+  if (!load) {
+    emptyFields.push("load");
+  }
+  if (!reps) {
+    emptyFields.push("reps");
+  }
+  if (!set) {
+    emptyFields.push("set");
+  }
+  if (emptyFields.length > 0) {
+    return { error: " Please fill in all the fields,", emptyFields };
+  }
+
   const exercise = await Exercise.create(
     workoutType,
     title,

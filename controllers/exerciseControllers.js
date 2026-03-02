@@ -1,17 +1,11 @@
-const {
-  getExercisesService,
-  getSingleExerciseService,
-  createExerciseService,
-  deleteExerciseService,
-  updateExerciseService,
-} = require("../services/exercise.service");
+const exerciseService = require("../services/exercise.service");
 
 // API
 
 // Get all Exercises and Populate value 'name'
 const getExercises = async (req, res) => {
   try {
-    const exercises = await getExercisesService();
+    const exercises = await exerciseService.getExercisesService();
     res.status(200).json(exercises);
   } catch (error) {
     console.error("Error fetching Exercise: ", error);
@@ -24,7 +18,7 @@ const getSingleExercise = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const exercise = await getSingleExerciseService(id);
+    const exercise = await exerciseService.getSingleExerciseService(id);
 
     return exercise;
   } catch (error) {
@@ -36,28 +30,9 @@ const getSingleExercise = async (req, res) => {
 const createExercise = async (req, res) => {
   const { workoutType, title, set, load, reps } = req.body;
 
-  let emptyFields = [];
-
-  if (!title) {
-    emptyFields.push("title");
-  }
-  if (!load) {
-    emptyFields.push("load");
-  }
-  if (!reps) {
-    emptyFields.push("reps");
-  }
-  if (!set) {
-    emptyFields.push("set");
-  }
-  if (emptyFields.length > 0) {
-    return res
-      .status(400)
-      .json({ error: " Please fill in all the fields,", emptyFields });
-  }
   console.log("create: ", workoutType);
   try {
-    const exercise = await createExerciseService({
+    const exercise = await exerciseService.createExerciseService({
       workoutType,
       title,
       totalSet: set,
@@ -76,12 +51,8 @@ const createExercise = async (req, res) => {
 // Delete a workout
 const deleteExercise = async (req, res) => {
   const { id } = req.params;
-  console.log("delete_id: ", id);
-  // if (!mongoose.Types.ObjectId.isValid(id)) {
-  //   return res.status(404).json({ error: "No such exercise" });
-  // }
 
-  const exercise = await deleteExerciseService({ _id: id });
+  const exercise = await exerciseService.deleteExerciseService({ _id: id });
   if (!exercise) {
     return res.status(400).json({ error: "No such exercise" });
   }
@@ -92,11 +63,8 @@ const deleteExercise = async (req, res) => {
 const updateExercise = async (req, res) => {
   const { id } = req.params;
   const { data } = req.body;
-  // if (!mongoose.Types.ObjectId.isValid(id)) {
-  //   return res.status(404).json({ error: "No such exercise" });
-  // }
 
-  const exercise = await updateExerciseService(id, data);
+  const exercise = await exerciseService.updateExerciseService(id, data);
   if (!exercise) {
     return res.status(400).json({ error: "No such exercise" });
   }

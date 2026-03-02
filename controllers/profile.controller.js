@@ -1,12 +1,9 @@
-const {
-  getProfileService,
-  updateProfileService,
-} = require("../services/profile.service");
+const profileService = require("../services/profile.service");
 
 const getProfileInfo = async (req, res) => {
   try {
     const id = req.user.id;
-    const userInfo = await getProfileService(id);
+    const userInfo = await profileService.getProfileService(id);
 
     res.status(200).json(userInfo);
   } catch (error) {
@@ -18,7 +15,7 @@ const updateProfileInfo = async (req, res) => {
   try {
     const { id } = req.user.id;
     const { data } = req.body;
-    const userInfo = await updateProfileService(id, data);
+    const userInfo = await profileService.updateProfileService(id, data);
 
     res.status(200).json(userInfo);
   } catch (error) {

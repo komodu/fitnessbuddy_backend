@@ -1,9 +1,14 @@
 const UserWorkoutPlan = require("../models/userWorkoutPlan");
 const Exercise = require("../models/exerciseModel");
+
+// utils
+const helper = require("../utils/helpers");
+
 // Find today's User WorkoutPlan
-const getTodayWorkoutPlanService = async (userId) => {
+const getTodayExerciseByWorkoutType = async (userId) => {
   try {
-    const userTodayWorkout = await UserWorkoutPlan.findOne({
+    F;
+    const userPlan = await UserWorkoutPlan.findOne({
       user: userId,
     }).populate({
       path: "planTemplate",
@@ -12,20 +17,23 @@ const getTodayWorkoutPlanService = async (userId) => {
       },
     });
 
-    return userTodayWorkout;
-  } catch (error) {
-    throw new Error("Error getTodayWorkoutService: ", error);
-  }
-};
+    // Get Today's Workout
+    const today = new Date();
+    // Check workout Type
+    const workoutType = helper.getWorkoutForDays(today, userPlan.planTemplate);
 
-const getTodayExerciseService = (workoutType) => {
-  try {
+    // Get Exercises
     const exercises = Exercise.find({ workoutType: workoutType });
 
-    return exercises;
+    return {
+      exercisesForTheDay: exercises,
+      plan: userPlan,
+      date: today,
+      day: workoutType.day,
+      name: workoutType.exercises.name,
+    };
   } catch (error) {
-    throw new Error("Error getTodayExercises: ", error);
+    throw new Error("Error getTodayExerciseByWorkoutType: ", error);
   }
 };
-
-module.exports = { getTodayWorkoutPlanService, getTodayExerciseService };
+module.exports = { getTodayExerciseByWorkoutType };

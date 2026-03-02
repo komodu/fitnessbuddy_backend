@@ -1,24 +1,6 @@
-const {
-  createWorkoutPlanTemplateService,
-  getWorkoutPlanTemplatesService,
+const workoutPlanService = require("../services/workoutPlan.service.js");
 
-  getAllUserPlanService,
-  getActivePlanService,
-  deletePlanService,
-} = require("../services/workoutPlan.service.js");
-
-const { getExerciseInWorkout } = require("../services/exercise.service.js");
-const days = [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
-];
-
-const createWorkoutPlanTemplate = async (req, res) => {
+const createTemplate = async (req, res) => {
   try {
     const {
       name,
@@ -26,24 +8,9 @@ const createWorkoutPlanTemplate = async (req, res) => {
       workoutTypeIds, // array from frontend
     } = req.body;
 
-    // Find REST workout type
-    const restWorkoutType = await WorkoutType.findOne({ name: "Rest" });
-
-    if (!restWorkoutType) {
-      await WorkoutType.create({ name: "Rest" });
-      res.status(201).json({
-        message: "Rest workout type not found, and created it successfully",
-      });
-    }
-
-    //  Generate weekly schedule
-    const weeklySchedule = generateWeeklySchedule(
+    //  Call Service to create template
+    const template = await workoutPlanService.createTemplateService({
       workoutTypeIds,
-      restWorkoutType._id,
-    );
-
-    //  Save template
-    const template = await createWorkoutPlanTemplateService({
       user: req.user.id,
       name,
       daysPerWeek,
@@ -58,59 +25,13 @@ const createWorkoutPlanTemplate = async (req, res) => {
   }
 };
 
-const getWorkoutPlansTemplates = async (req, res) => {
+const getTemplates = async (req, res) => {
   try {
     const id = req.user.id;
     //  Populate weeklySchedule and nested day refs
-    const templates = await getWorkoutPlanTemplatesService(id);
+    const templates = await workoutPlanService.getTemplatesService(id);
 
-    const workoutTypesSet = new Set();
-
-    templates.forEach((template) => {
-      const scheduleObj = template.weeklySchedule;
-      if (!scheduleObj) return;
-
-      days.forEach((day) => {
-        const dayData = scheduleObj[day];
-
-        if (dayData && dayData._id) {
-          workoutTypesSet.add(dayData._id);
-        }
-      });
-    });
-
-    const workoutTypes = [...workoutTypesSet];
-
-    //  Fetch exercises once
-    const exercises = await getExerciseInWorkout(workoutTypes);
-
-    //  Group exercises by workoutType
-    const exerciseMap = exercises.reduce((acc, exercise) => {
-      if (!acc[exercise.workoutType]) {
-        acc[exercise.workoutType] = [];
-      }
-      acc[exercise.workoutType].push(exercise);
-      return acc;
-    }, {});
-
-    //  Attach exercises per day
-    const formattedTemplates = templates.map((template) => {
-      const templateObj = template.toObject();
-      const scheduleObj = templateObj.weeklySchedule;
-
-      if (!scheduleObj) return templateObj;
-
-      days.forEach((day) => {
-        const dayData = scheduleObj[day];
-        if (dayData && dayData.name) {
-          dayData.exercises = exerciseMap[dayData._id] || [];
-        }
-      });
-
-      return templateObj;
-    });
-
-    res.status(200).json(formattedTemplates);
+    res.status(200).json(templates);
   } catch (error) {
     console.error("getWorkoutPlansTemplates error:", error);
     res.status(500).json({
@@ -121,26 +42,9 @@ const getWorkoutPlansTemplates = async (req, res) => {
 };
 
 // UserWorkoutPlans
-const createUserPlan = async (req, res) => {
+const createPlan = async (req, res) => {
   try {
-    const nestedPopulate = days.map((day) => ({
-      path: `weeklySchedule.${day}`,
-    }));
-
-    const userId = req.user.id;
-    const {
-      planName,
-      planTemplate: selectedTemplate,
-      startDate,
-      endDate,
-    } = req.body;
-    console.log(userId);
-    console.log(selectedTemplate);
-    console.log(startDate);
-    console.log(endDate);
-    // TODO: ! Create validations & date must not conflict
-
-    const createdPlan = await UserWorkoutPlan.create({
+    const createdPlan = await workoutPlanService.createPlanService({
       user: userId,
       planName: planName,
       planTemplate: selectedTemplate,
@@ -148,20 +52,7 @@ const createUserPlan = async (req, res) => {
       endDate: endDate,
     });
 
-    if (!createdPlan) throw new Error("Failed to create new Plan");
-    const newPlan = await UserWorkoutPlan.findOne({
-      planName,
-      planTemplate: selectedTemplate,
-      startDate,
-      endDate,
-    });
-
-    const populatedPlan = await UserWorkoutPlan.findById(newPlan._id).populate({
-      path: "planTemplate",
-      populate: nestedPopulate,
-    });
-    console.log("popultaed:", populatedPlan);
-    res.status(201).json({ message: "Success", data: populatedPlan });
+    res.status(201).json({ message: "Success", data: createdPlan });
   } catch (err) {
     console.log("error in creating: ", err);
     res.status(400).json({ message: err.message });
@@ -184,10 +75,7 @@ const getAllUserPlan = async (req, res) => {
 const getActivePlan = async (req, res) => {
   try {
     const id = req.user.id;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // normalize to midnight
-
-    const activePlan = await getActivePlanService(id, today);
+    const activePlan = await getActivePlanService(id);
 
     res.status(200).json(activePlan);
   } catch (error) {
@@ -211,11 +99,11 @@ const deleteWorkoutPlan = async (req, res) => {
 };
 
 module.exports = {
-  getWorkoutPlansTemplates,
-  createWorkoutPlanTemplate,
+  getTemplates,
+  createTemplate,
 
   deleteWorkoutPlan,
   getAllUserPlan,
   getActivePlan,
-  createUserPlan,
+  createPlan,
 };

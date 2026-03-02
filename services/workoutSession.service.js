@@ -11,15 +11,10 @@ const getAllSessionService = async ({ userId }) => {
 };
 
 const startSessionService = async ({ userId, planId, workoutTypeId }) => {
-  console.log("session: userid: ", userId);
-  console.log("session: PLANID: ", planId);
-  console.log("session: workouttypeID: ", workoutTypeId);
   // Fetch workout type from DB
   const workoutType = await WorkoutType.findById(workoutTypeId);
 
-  if (!workoutType) {
-    throw new Error("Workout type not found");
-  }
+  if (!workoutType) throw new Error("Workout type not found");
 
   const exercises = await Exercises.find({ workoutType: workoutTypeId });
   if (!exercises) {
@@ -73,7 +68,8 @@ const addSetService = async (id) => {
   return session;
 };
 
-const completeSetService = async (id, userId, today) => {
+const completeSetService = async (id, userId) => {
+  const today = new Date();
   const session = await WorkoutSession.findOneAndUpdate({
     _id: id,
     user: userId,
@@ -81,7 +77,22 @@ const completeSetService = async (id, userId, today) => {
     endTime: { $gte: today },
   });
   if (!session) throw new Error("Failed to complete Session");
-  return session;
+
+  if (!session) {
+    return res.status(400).json({ message: "Session not found" });
+  }
+
+  if (session.status === "completed") {
+    return res.status(400).json({
+      message: "Workout already completed for today",
+    });
+  }
+
+  // Mark as completed
+  session.status = "completed";
+
+  await session.save();
+  return res.status(200).json(session);
 };
 module.exports = {
   getAllSessionService,
